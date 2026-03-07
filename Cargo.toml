@@ -1,0 +1,45 @@
+[package]
+name    = "stegano_core"
+version = "0.1.0"
+edition = "2021"
+authors = ["Steganography Research Team"]
+description = "High-performance steganography engine: Adaptive Quadtree + Discrete ABC + LSB-Matching"
+
+# ── Library configuration ────────────────────────────────────────────────────
+# crate-type = ["cdylib"] produces a shared library (.so / .pyd) loadable by Python.
+# The source is kept in rust_src/ to avoid conflicts with the existing Python src/ package.
+[lib]
+name       = "stegano_core"
+crate-type = ["cdylib"]
+path       = "rust_src/lib.rs"
+
+# ── Dependencies ─────────────────────────────────────────────────────────────
+[dependencies]
+
+# PyO3: Rust ↔ Python FFI bridge.
+# "extension-module" feature disables linking against libpython so that the .so
+# can be loaded by any compatible Python interpreter (maturin requirement).
+pyo3 = { version = "0.21", features = ["extension-module"] }
+
+# rust-numpy: zero-copy bridge between ndarray and NumPy arrays.
+# Version must match the PyO3 major version.
+numpy = "0.21"
+
+# ndarray: Rust's idiomatic N-dimensional array library.
+# Provides ArrayView2 / Array2 for O(1) slicing without data copies.
+ndarray = "0.15"
+
+# rand: Cryptographically seeded PRNG + utility traits (Rng, SeedableRng).
+# rand::seq::index::sample provides reservoir sampling in O(L) time.
+# "small_rng" feature enables SmallRng — a fast, non-cryptographic PRNG
+# (Xoshiro256++) that is 2-4x faster than StdRng for stochastic search loops.
+rand = { version = "0.8", features = ["small_rng"] }
+
+# ── Release-profile optimisations ────────────────────────────────────────────
+# lto = "thin" enables cross-crate inlining for tighter inner loops.
+# codegen-units = 1 allows LLVM to optimise across the entire crate at once.
+[profile.release]
+opt-level     = 3
+lto           = "thin"
+codegen-units = 1
+panic         = "abort"

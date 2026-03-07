@@ -1,0 +1,37 @@
+# pyproject.toml — maturin build configuration
+# ─────────────────────────────────────────────
+# maturin is the PEP 517 build backend that compiles the Rust extension
+# and installs the resulting .so into the active Python environment.
+#
+# Compile (development mode — editable install, no wheel):
+#   pip install maturin
+#   maturin develop --release
+#
+# Build a distributable wheel (for submission / CI):
+#   maturin build --release
+#
+# The compiled module will be importable as:
+#   import stegano_core
+
+[build-system]
+requires      = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name            = "stegano-core"
+version         = "0.1.0"
+description     = "Adaptive Quadtree + Discrete ABC + LSB-Matching steganography engine (Rust/PyO3)"
+requires-python = ">=3.9"
+dependencies    = [
+    "numpy",
+    "opencv-python",
+    "scikit-image",
+]
+
+[tool.maturin]
+# Activate the PyO3 "extension-module" feature so the .so does not link
+# against libpython (required for manylinux-compatible wheels).
+features = ["pyo3/extension-module"]
+
+# Python source directory is NOT set here because the Python package (src/)
+# is managed independently; maturin only needs to produce the Rust .so.
