@@ -1,0 +1,3 @@
+Dosya_Adi,Payload_Bit,Toplam_Piksel,Guvenli_Piksel(K),Daralma_Orani(%),ABC_Suresi_sn,MSE,PSNR_dB,SSIM
+1.pgm,1000,65536,23952,36.5479,0.00566,0.007889,69.1607,0.999985
+2.pgm,1000,65536,10768,16.4307,0.00421,0.007416,69.4292,0.999965
