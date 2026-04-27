@@ -32,6 +32,7 @@ import time
 import math
 import textwrap
 import csv
+import argparse
 
 # Force line-buffered stdout so progress prints never block
 sys.stdout.reconfigure(line_buffering=True)
@@ -294,12 +295,24 @@ def run_benchmark(
 # ═══════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Run Rust-backed steganography benchmark."
+    )
+    parser.add_argument("--dataset-dir", default="./data/BOSSbase-1.01/cover")
+    parser.add_argument("--subset-size", type=int, default=None)
+    parser.add_argument("--payload-size", type=int, default=10_000)
+    parser.add_argument("--colony-size", type=int, default=30)
+    parser.add_argument("--max-iter", type=int, default=50)
+    parser.add_argument("--min-block", type=int, default=4)
+    parser.add_argument("--csv-out", default="deney_sonuclari.csv")
+    args = parser.parse_args()
+
     run_benchmark(
-        dataset_dir  = "./data/BOSSbase-1.01/cover",
-        subset_size  = None,      # None = tüm 10.000 görüntü / set to an int for a subset
-        payload_size = 10_000,    # Secret message length in bits.
-        colony_size  = 30,        # D-ABC bees (half employed, half onlooker).
-        max_iter     = 50,        # D-ABC iteration budget.
-        min_block    = 4,         # Quadtree minimum block size (pixels).
-        csv_out      = "deney_sonuclari.csv",  # → academic_analysis.py reads this
+        dataset_dir=args.dataset_dir,
+        subset_size=args.subset_size,
+        payload_size=args.payload_size,
+        colony_size=args.colony_size,
+        max_iter=args.max_iter,
+        min_block=args.min_block,
+        csv_out=args.csv_out,
     )

@@ -28,6 +28,9 @@ dependencies    = [
     "scikit-image",
 ]
 
+[project.scripts]
+stegano = "stegano_core.cli:main"
+
 [tool.maturin]
 # Activate the PyO3 "extension-module" feature so the .so does not link
 # against libpython (required for manylinux-compatible wheels).
