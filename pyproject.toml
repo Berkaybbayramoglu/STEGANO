@@ -23,14 +23,19 @@ version         = "0.1.0"
 description     = "Adaptive Quadtree + Discrete ABC + LSB-Matching steganography engine (Rust/PyO3)"
 requires-python = ">=3.9"
 dependencies    = [
-    "numpy",
-    "opencv-python",
-    "scikit-image",
-    "cryptography",
+    "opencv-python>=4.8.0",
+    "numpy>=1.24.0",
+    "scikit-image>=0.21.0",
+    "rich>=13.5.2",
+    "psutil>=5.9.5",
+    "cryptography>=41.0.3",
+    "matplotlib>=3.7.2",
+    "questionary>=2.0.0"
 ]
 
 [project.scripts]
-stegano = "stegano_app.product_cli:main"
+stegano = "stegano_app.cli:main"
+stegano-product = "stegano_app.product_cli:main"
 
 [tool.maturin]
 # Activate the PyO3 "extension-module" feature so the .so does not link
