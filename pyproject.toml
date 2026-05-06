@@ -42,5 +42,6 @@ stegano-product = "stegano_app.product_cli:main"
 # against libpython (required for manylinux-compatible wheels).
 features = ["pyo3/extension-module"]
 
-# Python source directory is NOT set here because the Python package (src/)
-# is managed independently; maturin only needs to produce the Rust .so.
+# Explicitly include the Python packages
+python-packages = ["stegano_app", "stegano_core", "src"]
+include = ["stegano_app/**/*.txt", "stegano_app/**/*.ansi"]

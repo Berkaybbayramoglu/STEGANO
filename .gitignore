@@ -1,2 +1,25 @@
-data/
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
 .venv/
+venv/
+ENV/
+.env
+.pytest_cache/
+
+# --- Rust / PyO3 ---
+target/
+*.so
+*.pyd
+
+# --- Project Specific ---
+data/
+datasets/
+BOSSbase_1.01/
+
+
+# IDE Ayarları
+.idea/
+.vscode/
+.DS_Store
