@@ -1,0 +1,8 @@
+opencv-python>=4.8.0
+numpy>=1.24.0
+scikit-image>=0.21.0
+rich>=13.5.2
+psutil>=5.9.5
+cryptography>=41.0.3
+matplotlib>=3.7.2
+questionary>=2.0.0
