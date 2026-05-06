@@ -1,3 +1,12 @@
+"""
+Benchmark orchestration CLI.
+
+This module dispatches benchmark, sweep, and analysis commands by
+invoking the corresponding Python scripts as subprocesses. When no
+arguments are provided, it transfers control to the interactive
+product CLI for embedding and inspection workflows.
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -5,7 +14,14 @@ import subprocess
 import sys
 from pathlib import Path
 
+from rich.console import Console
+from rich.text import Text
+
+from stegano_app import product_cli
+
 ROOT = Path(__file__).parent.parent
+
+
 
 def _run(script: str, args: list[str]) -> int:
     cmd = [sys.executable, str(ROOT / script), *args]
@@ -87,6 +103,10 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     parser = build_parser()
+    if len(sys.argv) == 1:
+        console = Console(theme=product_cli.THEME)
+        product_cli.run_interactive(console)
+        raise SystemExit(0)
     ns = parser.parse_args()
     raise SystemExit(ns.func(ns))
 

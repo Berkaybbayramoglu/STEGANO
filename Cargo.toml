@@ -34,6 +34,7 @@ ndarray = "0.15"
 # "small_rng" feature enables SmallRng — a fast, non-cryptographic PRNG
 # (Xoshiro256++) that is 2-4x faster than StdRng for stochastic search loops.
 rand = { version = "0.8", features = ["small_rng"] }
+sha2 = "0.10"
 
 # ── Release-profile optimisations ────────────────────────────────────────────
 # lto = "thin" enables cross-crate inlining for tighter inner loops.

@@ -54,7 +54,7 @@ except ModuleNotFoundError:
         )
 
 # ── Parametreler ─────────────────────────────────────────────────────────────
-DATASET_DIR  = Path("./data/BOSSbase-1.01/cover")
+DATASET_DIR  = Path("/Users/betulyedek/Downloads/BOSSbase_1.01")
 N_IMAGES     = 5
 PAYLOAD_BITS = 10_000      # L = 10.000 bit → 100×100 binary matris
 COLONY_SIZE  = 30

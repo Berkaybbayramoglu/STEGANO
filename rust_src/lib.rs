@@ -637,6 +637,50 @@ fn get_quadtree_sparse_map(
     Ok(adaptive_quadtree(&img, min_block))
 }
 
+/// **Deterministic D-ABC Coordinate Selector** — exposed for product workflows.
+///
+/// Accepts a precomputed quadtree pool and returns the D-ABC-optimised
+/// coordinates using a deterministic RNG seed for reproducibility.
+///
+/// # Python Signature
+/// ```python
+/// coords = stegano_core.dabc_select_coords(
+///     image, pool, payload_size, colony_size, max_iter, seed
+/// )
+/// ```
+#[pyfunction]
+#[pyo3(signature = (image, pool, payload_size, colony_size, max_iter, seed))]
+fn dabc_select_coords(
+    image: PyReadonlyArray2<u8>,
+    pool: Vec<(usize, usize)>,
+    payload_size: usize,
+    colony_size: usize,
+    max_iter: usize,
+    seed: u64,
+) -> PyResult<Vec<(usize, usize)>> {
+    let img = image.as_array();
+    if pool.len() <= payload_size {
+        return Err(pyo3::exceptions::PyValueError::new_err(format!(
+            "Quadtree pool ({}) <= payload_size ({}).",
+            pool.len(),
+            payload_size
+        )));
+    }
+
+    let mut rng = SmallRng::seed_from_u64(seed);
+    let best_indices = run_discrete_abc(
+        &pool,
+        &img,
+        payload_size,
+        colony_size,
+        max_iter,
+        10,
+        &mut rng,
+    );
+    let coords: Vec<(usize, usize)> = best_indices.iter().map(|&i| pool[i]).collect();
+    Ok(coords)
+}
+
 /// **Module Registrar** — called by the Python import machinery.
 ///
 /// Registers all public symbols into the `stegano_core` Python module.
@@ -646,5 +690,6 @@ fn stegano_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(run_stegano_engine, m)?)?;
     m.add_function(wrap_pyfunction!(embed_with_details, m)?)?;
     m.add_function(wrap_pyfunction!(get_quadtree_sparse_map, m)?)?;
+    m.add_function(wrap_pyfunction!(dabc_select_coords, m)?)?;
     Ok(())
 }
