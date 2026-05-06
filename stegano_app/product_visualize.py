@@ -20,7 +20,7 @@ import numpy as np
 from skimage.metrics import structural_similarity as ssim
 
 import stegano_core
-from main import compute_psnr, compute_ssim, compute_mse
+from stegano_app.metrics import compute_psnr, compute_ssim, compute_mse
 
 matplotlib.rcParams.update({
     "font.family": "serif",

@@ -1095,7 +1095,7 @@ def purify_ansi_banner(raw_ansi: str) -> str:
 
 def _print_branding(console: Console) -> None:
     console.clear()
-    banner_path = ROOT / "STEGANO_1.ansi.txt"
+    banner_path = Path(__file__).parent / "STEGANO_1.ansi.txt"
 
     banner_header = Text()
     banner_header.append("> ", style=f"bold {HILITE}")
