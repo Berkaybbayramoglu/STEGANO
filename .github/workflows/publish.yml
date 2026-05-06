@@ -24,7 +24,6 @@ jobs:
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
-          target: all
           args: --release --out dist
 
       - name: Upload wheels
