@@ -117,7 +117,7 @@ def compute_ssim(original: np.ndarray, stego: np.ndarray) -> float:
 # DATA LOADING
 # ═══════════════════════════════════════════════════════════════════════════
 
-def iter_images(dataset_dir: str, subset_size: int | None = None):
+def iter_images(dataset_dir: str, subset_size=None):
     """
     Generator that yields (filename, image_matrix) one at a time.
     Never loads more than one image into memory simultaneously.

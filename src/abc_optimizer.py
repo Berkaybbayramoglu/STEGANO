@@ -39,11 +39,9 @@ class ABCOptimizer:
         """
         selected_coords = self.safe_pixels[food_indices]
 
-        # Şimdilik, seçilen piksellerin değerlerinin toplamını bir "doku puanı" gibi düşünelim
-        # Akademik modelde buraya C(p) - D(p) formülünü entegre edeceğiz.
         score = 0.0
         for y, x in selected_coords:
-            score += image_matrix[y, x]  # Geçici metrik
+            score += image_matrix[y, x]
 
         # Fitness maksimize edilmek istendiği için doğrudan skoru dönüyoruz
         return score
