@@ -1,6 +1,6 @@
 [package]
 name    = "stegano_core"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 authors = ["Steganography Research Team"]
 description = "High-performance steganography engine: Adaptive Quadtree + Discrete ABC + LSB-Matching"
@@ -19,7 +19,7 @@ path       = "rust_src/lib.rs"
 # PyO3: Rust ↔ Python FFI bridge.
 # "extension-module" feature disables linking against libpython so that the .so
 # can be loaded by any compatible Python interpreter (maturin requirement).
-pyo3 = { version = "0.21", features = ["extension-module"] }
+pyo3 = { version = "0.22.0", features = ["extension-module"] }
 
 # rust-numpy: zero-copy bridge between ndarray and NumPy arrays.
 # Version must match the PyO3 major version.
