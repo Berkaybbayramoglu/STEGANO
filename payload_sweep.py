@@ -59,7 +59,7 @@ sys.stdout.reconfigure(line_buffering=True)
 warnings.filterwarnings("ignore")
 
 # ── Configuration ─────────────────────────────────────────────────────────────
-DATASET_DIR = Path("./data/BOSSbase-1.01/cover")
+DATASET_DIR = Path("/Users/betulyedek/Downloads/BOSSbase_1.01")
 PAYLOADS    = [1_000, 2_500, 5_000, 10_000, 20_000, 40_000]
 COLONY      = 30
 MAX_ITER    = 50

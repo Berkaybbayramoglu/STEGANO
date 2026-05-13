@@ -16,6 +16,7 @@ import matplotlib
 import matplotlib.gridspec as gridspec
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
+import cv2
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
 
@@ -42,11 +43,18 @@ def make_quadtree_overlay(image: np.ndarray, min_block: int = MIN_BLOCK) -> tupl
     Quadtree'nin sectigi pikselleri gorsellestiren RGB overlay olusturur.
     Secili pikseller sari, geri kalanlar orijinal gri tondadir.
     """
-    rgb = np.stack([image, image, image], axis=-1).copy()
-    coords = stegano_core.get_quadtree_sparse_map(image, min_block)
-    mask = np.zeros(image.shape, dtype=bool)
+    if image.ndim == 3:
+        gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        rgb = image.copy()
+    else:
+        gray = image
+        rgb = np.stack([image, image, image], axis=-1).copy()
+
+    coords = stegano_core.get_quadtree_sparse_map(gray, min_block)
+    mask = np.zeros(gray.shape, dtype=bool)
     for (y, x) in coords:
         mask[y, x] = True
+
     rgb[mask, 0] = np.clip(rgb[mask, 0].astype(int) // 2 + 128, 0, 255).astype(np.uint8)
     rgb[mask, 1] = np.clip(rgb[mask, 1].astype(int) // 2 + 128, 0, 255).astype(np.uint8)
     rgb[mask, 2] = (rgb[mask, 2] * 0).astype(np.uint8)
@@ -61,21 +69,30 @@ def inspect_pair(
     cover_name: str = "cover.pgm",
     stego_name: str = "stego.pgm",
 ) -> dict[str, float | int]:
-    if cover.ndim != 2 or stego.ndim != 2:
-        raise ValueError("expected grayscale images for inspection")
+    if cover.ndim not in (2, 3) or stego.ndim not in (2, 3):
+        raise ValueError("expected 2D grayscale or 3D RGB images for inspection")
     if cover.shape != stego.shape:
         raise ValueError("cover and stego images must have the same dimensions")
 
     mse = compute_mse(cover, stego)
     psnr = compute_psnr(mse)
-    ssim_v = compute_ssim(cover, stego)
+    if cover.ndim == 3:
+        ssim_v = compute_ssim(cover, stego, channel_axis=-1)
+    else:
+        ssim_v = compute_ssim(cover, stego)
 
     diff_raw = np.abs(cover.astype(np.int16) - stego.astype(np.int16))
-    diff_amp = np.clip(diff_raw * DIFF_AMPLIFY, 0, 255).astype(np.uint8)
-    n_changed = int((diff_raw > 0).sum())
+    if diff_raw.ndim == 3:
+        diff_raw_gray = diff_raw.max(axis=-1)
+        diff_amp = np.clip(diff_raw_gray * DIFF_AMPLIFY, 0, 255).astype(np.uint8)
+        n_changed = int((diff_raw_gray > 0).sum())
+    else:
+        diff_amp = np.clip(diff_raw * DIFF_AMPLIFY, 0, 255).astype(np.uint8)
+        n_changed = int((diff_raw > 0).sum())
 
     qt_rgb, pool_size = make_quadtree_overlay(cover, MIN_BLOCK)
-    comp = 100.0 * pool_size / cover.size
+    pool_ratio_size = cover.shape[0] * cover.shape[1]
+    comp = 100.0 * pool_size / pool_ratio_size
 
     fig = plt.figure(figsize=(22, 5.2))
     fig.patch.set_facecolor("#0f0f0f")

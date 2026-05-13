@@ -58,18 +58,24 @@ THEME = Theme(
 )
 
 
-def _load_pgm(path: Path) -> np.ndarray:
-    img = cv2.imread(str(path), cv2.IMREAD_GRAYSCALE)
+def _load_image(path: Path) -> np.ndarray:
+    img = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
     if img is None:
         raise FileNotFoundError(f"could not read image: {path}")
-    if img.ndim != 2:
-        raise ValueError("expected a grayscale .pgm image")
+    if img.ndim == 3:
+        if img.shape[2] == 3:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        elif img.shape[2] == 4:
+            img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
     return img.astype(np.uint8, copy=False)
 
 
-def _save_pgm(path: Path, img: np.ndarray) -> None:
+def _save_image(path: Path, img: np.ndarray) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    ok = cv2.imwrite(str(path), img)
+    save_img = img
+    if img.ndim == 3:
+        save_img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    ok = cv2.imwrite(str(path), save_img)
     if not ok:
         raise OSError(f"failed to write image: {path}")
 
@@ -190,6 +196,7 @@ def _prompt_path(
     def _validate(value: str) -> bool | str:
         if not value:
             return "Path is required."
+        value = value.strip(" '\"")
         path = Path(value).expanduser()
         if must_exist:
             if not path.exists():
@@ -217,7 +224,7 @@ def _prompt_path(
     ).ask()
     if answer is None:
         raise KeyboardInterrupt
-    return Path(answer).expanduser()
+    return Path(answer.strip(" '\"")).expanduser()
 
 
 def _prompt_output_path(message: str, default: str, console: Console) -> tuple[Path, bool]:
@@ -260,8 +267,9 @@ def cmd_lock(ns: argparse.Namespace, console: Console) -> int:
 
     cover_path = Path(ns.input)
     output_path = Path(ns.output)
-    if cover_path.suffix.lower() != ".pgm":
-        raise ValueError("Input must be a .pgm file.")
+    valid_exts = {".pgm", ".png", ".tiff", ".tif", ".bmp", ".jpg", ".jpeg"}
+    if cover_path.suffix.lower() not in valid_exts:
+        raise ValueError(f"Input must be a supported image file ({', '.join(valid_exts)}).")
     _ensure_readable_file(cover_path)
     _ensure_output_path(output_path, ns.force)
 
@@ -269,7 +277,7 @@ def cmd_lock(ns: argparse.Namespace, console: Console) -> int:
         file_path = Path(ns.file)
         _ensure_readable_file(file_path)
 
-    cover = _load_pgm(cover_path)
+    cover = _load_image(cover_path)
     if ns.message is not None:
         payload_bits = encode_message(ns.message, ns.password)
     else:
@@ -277,15 +285,36 @@ def cmd_lock(ns: argparse.Namespace, console: Console) -> int:
 
     payload_bits = np.ascontiguousarray(payload_bits, dtype=np.uint8)
     with console.status("Analyzing image and embedding payload...", spinner="dots"):
-        stego = stegano_core.run_product_embed(
-            cover,
-            payload_bits,
-            ns.password,
-            ns.colony_size,
-            ns.max_iter,
-            ns.min_block,
-        )
-    _save_pgm(output_path, stego)
+        if cover.ndim == 2:
+            stego = stegano_core.run_product_embed(
+                cover,
+                payload_bits,
+                ns.password,
+                ns.colony_size,
+                ns.max_iter,
+                ns.min_block,
+            )
+        elif cover.ndim == 3:
+            payload_len = len(payload_bits)
+            base_len = payload_len // 3
+            c_payloads = [
+                np.ascontiguousarray(payload_bits[:base_len]),
+                np.ascontiguousarray(payload_bits[base_len:2*base_len]),
+                np.ascontiguousarray(payload_bits[2*base_len:])
+            ]
+            stego_channels = []
+            for i in range(3):
+                c_stego = stegano_core.run_product_embed(
+                    np.ascontiguousarray(cover[:, :, i]),
+                    c_payloads[i],
+                    ns.password,
+                    ns.colony_size,
+                    ns.max_iter,
+                    ns.min_block,
+                )
+                stego_channels.append(c_stego)
+            stego = np.dstack(stego_channels)
+    _save_image(output_path, stego)
     console.print(
         Panel.fit(
             f"Saved stego image:\n{output_path}",
@@ -299,20 +328,35 @@ def cmd_lock(ns: argparse.Namespace, console: Console) -> int:
 def cmd_unlock(ns: argparse.Namespace, console: Console) -> int:
     stego_path = Path(ns.input)
     output_path = Path(ns.output)
-    if stego_path.suffix.lower() != ".pgm":
-        raise ValueError("Input must be a .pgm file.")
+    valid_exts = {".pgm", ".png", ".tiff", ".tif", ".bmp", ".jpg", ".jpeg"}
+    if stego_path.suffix.lower() not in valid_exts:
+        raise ValueError(f"Input must be a supported image file ({', '.join(valid_exts)}).")
     _ensure_readable_file(stego_path)
     _ensure_output_path(output_path, ns.force)
 
-    stego = _load_pgm(stego_path)
+    stego = _load_image(stego_path)
     with console.status("Extracting and decrypting payload...", spinner="dots"):
-        payload_bits = stegano_core.run_product_extract(
-            stego,
-            ns.password,
-            ns.colony_size,
-            ns.max_iter,
-            ns.min_block,
-        )
+        if stego.ndim == 2:
+            payload_bits = stegano_core.run_product_extract(
+                stego,
+                ns.password,
+                ns.colony_size,
+                ns.max_iter,
+                ns.min_block,
+            )
+        elif stego.ndim == 3:
+            c_payloads = []
+            for i in range(3):
+                bits = stegano_core.run_product_extract(
+                    np.ascontiguousarray(stego[:, :, i]),
+                    ns.password,
+                    ns.colony_size,
+                    ns.max_iter,
+                    ns.min_block,
+                )
+                c_payloads.append(bits)
+            payload_bits = np.concatenate(c_payloads)
+            
         try:
             data = decode_bits(payload_bits, ns.password)
         except (InvalidTag, ValueError) as exc:
@@ -364,14 +408,15 @@ def cmd_inspect(ns: argparse.Namespace, console: Console) -> int:
     cover_path = Path(ns.cover)
     stego_path = Path(ns.stego)
     output_path = Path(ns.output)
-    if cover_path.suffix.lower() != ".pgm" or stego_path.suffix.lower() != ".pgm":
-        raise ValueError("Input must be a .pgm file.")
+    valid_exts = {".pgm", ".png", ".tiff", ".tif", ".bmp", ".jpg", ".jpeg"}
+    if cover_path.suffix.lower() not in valid_exts or stego_path.suffix.lower() not in valid_exts:
+        raise ValueError(f"Input must be a supported image file ({', '.join(valid_exts)}).")
     _ensure_readable_file(cover_path)
     _ensure_readable_file(stego_path)
     _ensure_output_path(output_path, ns.force)
 
-    cover = _load_pgm(cover_path)
-    stego = _load_pgm(stego_path)
+    cover = _load_image(cover_path)
+    stego = _load_image(stego_path)
     if cover.shape != stego.shape:
         raise ValueError("cover and stego images must have the same dimensions")
 
@@ -475,14 +520,15 @@ def _lock_menu(console: Console) -> argparse.Namespace:
         def _validate(value: str) -> bool | str:
             if not value:
                 return "Path is required."
+            value = value.strip(" '\"")
             path = Path(value).expanduser()
             if must_exist:
                 if not path.exists():
                     return f"Input file not found: {path}."
                 if not path.is_file():
                     return f"Input path is not a file: {path}."
-            if require_pgm and path.suffix.lower() != ".pgm":
-                return "Input must be a .pgm file."
+            if require_pgm and path.suffix.lower() not in {".pgm", ".png", ".tiff", ".tif", ".bmp", ".jpg", ".jpeg"}:
+                return "Input must be a supported image file (.pgm, .png, .tiff, etc)."
             return True
 
         _render_step(active_index, description)
@@ -495,7 +541,7 @@ def _lock_menu(console: Console) -> argparse.Namespace:
         ).ask()
         if value is None:
             raise KeyboardInterrupt
-        return Path(value).expanduser()
+        return Path(value.strip(" '\"")).expanduser()
 
     def _prompt_password(active_index: int) -> str:
         _render_step(active_index, "Set a strong password for AES-GCM encryption:")
@@ -559,7 +605,7 @@ def _lock_menu(console: Console) -> argparse.Namespace:
 
     cover = _prompt_path_value(
         0,
-        "Enter the path to the original, untouched .pgm cover image:",
+        "Enter the path to the original, untouched cover image:",
         "Input Cover Image",
         must_exist=True,
         require_pgm=True,
@@ -576,7 +622,7 @@ def _lock_menu(console: Console) -> argparse.Namespace:
         ).ask()
         if output_value is None:
             raise KeyboardInterrupt
-        output = Path(output_value).expanduser()
+        output = Path(output_value.strip(" '\"")).expanduser()
         if output.exists():
             _render_step(1, "Specify the destination path for the generated stego image:")
             console.print(f"> Output Stego Image: {output}")
@@ -780,14 +826,15 @@ def _execute_unlock_protocol(console: Console) -> argparse.Namespace:
         def _validate(value: str) -> bool | str:
             if not value:
                 return "Path is required."
+            value = value.strip(" '\"")
             path = Path(value).expanduser()
             if must_exist:
                 if not path.exists():
                     return f"Input file not found: {path}."
                 if not path.is_file():
                     return f"Input path is not a file: {path}."
-            if require_pgm and path.suffix.lower() != ".pgm":
-                return "Input must be a .pgm file."
+            if require_pgm and path.suffix.lower() not in {".pgm", ".png", ".tiff", ".tif", ".bmp", ".jpg", ".jpeg"}:
+                return "Input must be a supported image file (.pgm, .png, .tiff, etc)."
             return True
 
         _render_step(active_index, description)
@@ -800,7 +847,7 @@ def _execute_unlock_protocol(console: Console) -> argparse.Namespace:
         ).ask()
         if value is None:
             raise KeyboardInterrupt
-        return Path(value).expanduser()
+        return Path(value.strip(" '\"")).expanduser()
 
     def _prompt_output_path_value(
         active_index: int,
@@ -822,7 +869,7 @@ def _execute_unlock_protocol(console: Console) -> argparse.Namespace:
             if value is None:
                 raise KeyboardInterrupt
             
-            output = Path(value).expanduser()
+            output = Path(value.strip(" '\"")).expanduser()
             if output.exists():
                 ans = questionary.text(
                     "File already exists. Overwrite? [y/n]",
@@ -901,7 +948,7 @@ def _execute_unlock_protocol(console: Console) -> argparse.Namespace:
 
     stego_path = _prompt_path_value(
         0,
-        "Specify the path to the .pgm stego image containing the hidden payload:",
+        "Specify the path to the stego image containing the hidden payload:",
         "Enter Stego Path",
         must_exist=True,
         require_pgm=True,
@@ -982,14 +1029,15 @@ def _wizard_inspect(console: Console) -> argparse.Namespace:
         def _validate(value: str) -> bool | str:
             if not value:
                 return "Path is required."
+            value = value.strip(" '\"")
             path = Path(value).expanduser()
             if must_exist:
                 if not path.exists():
                     return f"Input file not found: {path}."
                 if not path.is_file():
                     return f"Input path is not a file: {path}."
-            if require_pgm and path.suffix.lower() != ".pgm":
-                return "Input must be a .pgm file."
+            if require_pgm and path.suffix.lower() not in {".pgm", ".png", ".tiff", ".tif", ".bmp", ".jpg", ".jpeg"}:
+                return "Input must be a supported image file (.pgm, .png, .tiff, etc)."
             return True
 
         _render_step(active_index, description)
@@ -1002,7 +1050,7 @@ def _wizard_inspect(console: Console) -> argparse.Namespace:
         ).ask()
         if value is None:
             raise KeyboardInterrupt
-        return Path(value).expanduser()
+        return Path(value.strip(" '\"")).expanduser()
 
     def _prompt_output_path_value(
         active_index: int,
@@ -1024,7 +1072,7 @@ def _wizard_inspect(console: Console) -> argparse.Namespace:
             if value is None:
                 raise KeyboardInterrupt
             
-            output = Path(value).expanduser()
+            output = Path(value.strip(" '\"")).expanduser()
             if output.exists():
                 ans = questionary.text(
                     "File already exists. Overwrite? [y/n]",
@@ -1043,7 +1091,7 @@ def _wizard_inspect(console: Console) -> argparse.Namespace:
 
     cover = _prompt_path_value(
         0,
-        "Enter the path to the original, untouched .pgm cover image:",
+        "Enter the path to the original, untouched cover image:",
         "Cover Image Path",
         must_exist=True,
         require_pgm=True,
@@ -1051,7 +1099,7 @@ def _wizard_inspect(console: Console) -> argparse.Namespace:
 
     stego = _prompt_path_value(
         1,
-        "Enter the path to the .pgm stego image to be analyzed:",
+        "Enter the path to the stego image to be analyzed:",
         "Stego Image Path",
         must_exist=True,
         require_pgm=True,
@@ -1154,7 +1202,7 @@ def _show_help(console: Console) -> None:
     cmd_table = Table(show_header=False, box=None, show_edge=False, padding=(0, 2))
     cmd_table.add_column(style=f"bold {HILITE}", justify="left")
     cmd_table.add_column(style="muted")
-    cmd_table.add_row("Lock", "Encrypts and hides a secure payload (secret text or file) inside a cover .pgm image using AES-GCM and D-ABC optimization.")
+    cmd_table.add_row("Lock", "Encrypts and hides a secure payload (secret text or file) inside a cover image using AES-GCM and D-ABC optimization.")
     cmd_table.add_row("Unlock", "Extracts and decrypts a hidden payload from a stego image using D-ABC optimization.")
     cmd_table.add_row("Inspect", "Generates a publication-ready visual analysis (PSNR, SSIM, MSE) comparing cover and stego images.")
     console.print(Panel(cmd_table, title="[bold accent]COMMANDS[/]", border_style="accent", box=box.ROUNDED))
@@ -1392,14 +1440,14 @@ def run_interactive(console: Console) -> None:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="stegano-product",
-        description="Product CLI for deterministic PGM steganography",
+        description="Product CLI for deterministic steganography",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     sub = p.add_subparsers(dest="command", required=False)
 
     lock = sub.add_parser("lock", help="Encrypts and embeds a payload (message or file) into a cover image.")
-    lock.add_argument("-i", "--input", required=True, help="Cover .pgm image")
-    lock.add_argument("-o", "--output", required=True, help="Output stego .pgm")
+    lock.add_argument("-i", "--input", required=True, help="Cover image")
+    lock.add_argument("-o", "--output", required=True, help="Output stego image")
     lock.add_argument("-p", "--password", required=True, help="Password")
     lock.add_argument("-m", "--message", help="Message text to embed")
     lock.add_argument("-f", "--file", help="File path to embed")
@@ -1410,7 +1458,7 @@ def build_parser() -> argparse.ArgumentParser:
     lock.set_defaults(func=cmd_lock)
 
     unlock = sub.add_parser("unlock", help="Extracts and decrypts a hidden payload from a stego image.")
-    unlock.add_argument("-i", "--input", required=True, help="Stego .pgm image")
+    unlock.add_argument("-i", "--input", required=True, help="Stego image")
     unlock.add_argument("-o", "--output", required=True, help="Output file path")
     unlock.add_argument("-p", "--password", required=True, help="Password")
     unlock.add_argument("--colony-size", type=int, default=30)
@@ -1421,8 +1469,8 @@ def build_parser() -> argparse.ArgumentParser:
     unlock.set_defaults(func=cmd_unlock)
 
     insp = sub.add_parser("inspect", help="Generates a visual analysis comparing cover and stego images.")
-    insp.add_argument("--cover", required=True, help="Original cover .pgm image")
-    insp.add_argument("--stego", required=True, help="Stego .pgm image")
+    insp.add_argument("--cover", required=True, help="Original cover image")
+    insp.add_argument("--stego", required=True, help="Stego image")
     insp.add_argument("--output", default="inspection_result.png")
     insp.add_argument("--force", action="store_true", help="Overwrite outputs")
     insp.set_defaults(func=cmd_inspect)

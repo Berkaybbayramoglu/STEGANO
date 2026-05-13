@@ -11,5 +11,5 @@ def compute_psnr(mse: float, max_val: float = 255.0) -> float:
         return math.inf
     return 10.0 * math.log10(max_val ** 2 / mse)
 
-def compute_ssim(original: np.ndarray, stego: np.ndarray) -> float:
-    return float(ssim_metric(original, stego, data_range=255))
+def compute_ssim(original: np.ndarray, stego: np.ndarray, **kwargs) -> float:
+    return float(ssim_metric(original, stego, data_range=255, **kwargs))
