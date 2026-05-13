@@ -94,7 +94,7 @@ def inspect_pair(
     pool_ratio_size = cover.shape[0] * cover.shape[1]
     comp = 100.0 * pool_size / pool_ratio_size
 
-    fig = plt.figure(figsize=(22, 5.2))
+    fig = plt.figure(figsize=(22, 6.0))
     fig.patch.set_facecolor("#0f0f0f")
 
     col_titles = [
@@ -112,23 +112,9 @@ def inspect_pair(
         wspace=0.04,
         left=0.01,
         right=0.99,
-        top=0.96,
+        top=0.85,
         bottom=0.01,
     )
-
-    for col, title in enumerate(col_titles):
-        ax_t = fig.add_subplot(outer[0, col])
-        ax_t.set_visible(False)
-        fig.text(
-            (col + 0.5) / 4,
-            0.975,
-            title,
-            ha="center",
-            va="top",
-            fontsize=13,
-            fontweight="bold",
-            color="white",
-        )
 
     fig.text(
         0.002,
@@ -151,6 +137,7 @@ def inspect_pair(
 
     for col_idx, (data, cmap, add_cbar) in enumerate(panels):
         ax = fig.add_subplot(outer[0, col_idx])
+        ax.set_title(col_titles[col_idx], fontsize=13, fontweight="bold", color="white", pad=15)
         ax.set_xticks([])
         ax.set_yticks([])
         for spine in ax.spines.values():
@@ -270,7 +257,7 @@ def inspect_pair(
         fontsize=14,
         fontweight="bold",
         color="white",
-        y=0.999,
+        y=0.96,
     )
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
