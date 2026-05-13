@@ -395,7 +395,12 @@ def cmd_unlock(ns: argparse.Namespace, console: Console) -> int:
             console.print(Panel(decoded_text, title="[bold accent]Extracted Content[/]", box=box.ROUNDED))
         elif getattr(ns, "interactive_mode", False):
             import questionary
-            if questionary.confirm("Payload saved to disk. Readable text detected. Print to stdout?", default=False).ask():
+            ans = questionary.text(
+                "Payload saved to disk. Readable text detected. Print to stdout? [y/n]",
+                qmark="> ",
+                validate=lambda v: True if v.lower() in {"y", "yes", "n", "no"} else "Please enter y or n.",
+            ).ask()
+            if ans and ans.lower() in {"y", "yes"}:
                 console.print(Panel(decoded_text, title="[bold accent]Extracted Content[/]", box=box.ROUNDED))
     else:
         if getattr(ns, "print", False):
@@ -1169,14 +1174,14 @@ def _print_branding(console: Console) -> None:
     specs.add_column(justify="left", style="white", no_wrap=True, overflow="ignore")
     
     specs.add_row("Core", "Rust/PyO3")
-    specs.add_row("Method", "ABC LSB-M")
+    specs.add_row("Method", "ABC/LSB-M")
     specs.add_row("Filter", "Quadtree")
     specs.add_row("Cipher", "AES-GCM")
 
     right_panel = Panel(
         specs,
         title=f"[bold {ACCENT}]STEGANO[/]",
-        subtitle="[dim]v1.0.0[/dim]",
+        subtitle="[dim]v0.2.1[/dim]",
         subtitle_align="right",
         border_style="#444444",
         box=box.ROUNDED,
