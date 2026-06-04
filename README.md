@@ -22,6 +22,18 @@
 
 </div>
 
+<p align="center">
+  <a href="https://github.com/Berkaybbayramoglu/STEGANO"><img src="docs/btn_star.svg" height="50"/></a>
+  &nbsp;
+  <a href="https://pypi.org/project/stegano-core/"><img src="docs/btn_pip.svg" height="50"/></a>
+  &nbsp;
+  <a href="https://github.com/Berkaybbayramoglu/STEGANO/issues"><img src="docs/btn_issues.svg" height="50"/></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Berkaybbayramoglu/STEGANO"><img src="docs/btn_contribute.svg" width="80%"/></a>
+</p>
+
 ---
 
 ## Installation

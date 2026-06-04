@@ -1,41 +1,63 @@
-<svg width="100%" viewBox="0 0 680 240" role="img" xmlns="http://www.w3.org/2000/svg" style="">
-<title style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">STEGANO animasyonlu banner v3, ortalanmış ve sabit altyazı</title>
-<desc style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Temiz arı silüeti STEGANO harflerinin üstünden uçuyor, harfler decode oluyor, bit izi düşüyor, altyazı sabit ve ortalı.</desc>
+<svg width="100%" viewBox="0 0 680 240" role="img" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace">
+<title>STEGANO — Steganographic Embedding Engine</title>
+<desc>Animated banner: a bee flies over the STEGANO title, letters decode from scrambled characters, bits trail behind.</desc>
+<style>
+  .stg-real   { fill:#FAF9F5; font-size:58px; font-weight:800; letter-spacing:4px; }
+  .stg-scram  { fill:#9C9A92; font-size:58px; font-weight:800; letter-spacing:4px; animation: stgScram 6.5s ease-in-out infinite; }
+  .stg-rl     { animation: stgDecode 6.5s ease-in-out infinite; }
+  .stg-sub    { fill:#C2C0B6; font-size:15px; font-weight:500; letter-spacing:6px; }
+  .stg-bit    { fill:#EF9F27; font-size:13px; font-weight:700; animation: stgBit 1.7s linear infinite; }
+  .stg-wing   { animation: stgFlutter 0.12s linear infinite; transform-origin: 0px 0px; }
+  .stg-bee    { animation: stgFly 6.5s ease-in-out infinite alternate; }
+  @keyframes stgDecode  { 0%,14% { opacity:0.22; } 20%,100% { opacity:1; } }
+  @keyframes stgScram   { 0%,14% { opacity:1; } 20%,100% { opacity:0; } }
+  @keyframes stgBit     { 0% { opacity:0; transform:translateY(0) translateX(0);} 12% { opacity:0.95;} 100% { opacity:0; transform:translateY(42px) translateX(-14px);} }
+  @keyframes stgFlutter { 0%,100% { transform:scaleY(1) rotate(0deg);} 50% { transform:scaleY(0.55) rotate(-12deg);} }
+  @keyframes stgFly {
+    0%   { transform:translate(20px,120px) rotate(8deg); }
+    20%  { transform:translate(140px,92px) rotate(-4deg); }
+    40%  { transform:translate(280px,108px) rotate(6deg); }
+    60%  { transform:translate(420px,88px) rotate(-5deg); }
+    80%  { transform:translate(540px,100px) rotate(4deg); }
+    100% { transform:translate(600px,60px) rotate(0deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .stg-scram,.stg-rl,.stg-bit,.stg-wing,.stg-bee { animation:none; }
+    .stg-scram { opacity:0; } .stg-rl { opacity:1; }
+  }
+</style>
 
+<text class="stg-scram" x="118" y="138" style="animation-delay:0.6s">S</text>
+<text class="stg-real stg-rl" x="118" y="138" style="animation-delay:0.6s">S</text>
+<text class="stg-scram" x="178" y="138" style="animation-delay:1.0s">#</text>
+<text class="stg-real stg-rl" x="178" y="138" style="animation-delay:1.0s">T</text>
+<text class="stg-scram" x="236" y="138" style="animation-delay:1.4s">@</text>
+<text class="stg-real stg-rl" x="236" y="138" style="animation-delay:1.4s">E</text>
+<text class="stg-scram" x="294" y="138" style="animation-delay:1.8s">%</text>
+<text class="stg-real stg-rl" x="294" y="138" style="animation-delay:1.8s">G</text>
+<text class="stg-scram" x="360" y="138" style="animation-delay:2.2s">&amp;</text>
+<text class="stg-real stg-rl" x="360" y="138" style="animation-delay:2.2s">A</text>
+<text class="stg-scram" x="422" y="138" style="animation-delay:2.6s">$</text>
+<text class="stg-real stg-rl" x="422" y="138" style="animation-delay:2.6s">N</text>
+<text class="stg-scram" x="486" y="138" style="animation-delay:3.0s">?</text>
+<text class="stg-real stg-rl" x="486" y="138" style="animation-delay:3.0s">O</text>
 
-<text x="118" y="138" style="animation-delay:0.6s;fill:rgb(156, 154, 146);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0;font-family:ui-monospace, monospace;font-size:58px;font-weight:800;text-anchor:start;dominant-baseline:auto">S</text>
-<text x="118" y="138" style="animation-delay:0.6s;fill:rgb(250, 249, 245);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:ui-monospace, monospace;font-size:58px;font-weight:800;text-anchor:start;dominant-baseline:auto">S</text>
-<text x="178" y="138" style="animation-delay:1.0s;fill:rgb(156, 154, 146);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0;font-family:ui-monospace, monospace;font-size:58px;font-weight:800;text-anchor:start;dominant-baseline:auto">#</text>
-<text x="178" y="138" style="animation-delay:1.0s;fill:rgb(250, 249, 245);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:ui-monospace, monospace;font-size:58px;font-weight:800;text-anchor:start;dominant-baseline:auto">T</text>
-<text x="236" y="138" style="animation-delay:1.4s;fill:rgb(156, 154, 146);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0;font-family:ui-monospace, monospace;font-size:58px;font-weight:800;text-anchor:start;dominant-baseline:auto">@</text>
-<text x="236" y="138" style="animation-delay:1.4s;fill:rgb(250, 249, 245);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:ui-monospace, monospace;font-size:58px;font-weight:800;text-anchor:start;dominant-baseline:auto">E</text>
-<text x="294" y="138" style="animation-delay:1.8s;fill:rgb(156, 154, 146);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0;font-family:ui-monospace, monospace;font-size:58px;font-weight:800;text-anchor:start;dominant-baseline:auto">%</text>
-<text x="294" y="138" style="animation-delay:1.8s;fill:rgb(250, 249, 245);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:ui-monospace, monospace;font-size:58px;font-weight:800;text-anchor:start;dominant-baseline:auto">G</text>
-<text x="360" y="138" style="animation-delay:2.2s;fill:rgb(156, 154, 146);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0;font-family:ui-monospace, monospace;font-size:58px;font-weight:800;text-anchor:start;dominant-baseline:auto">&amp;</text>
-<text x="360" y="138" style="animation-delay:2.2s;fill:rgb(250, 249, 245);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:ui-monospace, monospace;font-size:58px;font-weight:800;text-anchor:start;dominant-baseline:auto">A</text>
-<text x="422" y="138" style="animation-delay:2.6s;fill:rgb(156, 154, 146);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0;font-family:ui-monospace, monospace;font-size:58px;font-weight:800;text-anchor:start;dominant-baseline:auto">$</text>
-<text x="422" y="138" style="animation-delay:2.6s;fill:rgb(250, 249, 245);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:ui-monospace, monospace;font-size:58px;font-weight:800;text-anchor:start;dominant-baseline:auto">N</text>
-<text x="486" y="138" style="animation-delay:3.0s;fill:rgb(156, 154, 146);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0;font-family:ui-monospace, monospace;font-size:58px;font-weight:800;text-anchor:start;dominant-baseline:auto">?</text>
-<text x="486" y="138" style="animation-delay:3.0s;fill:rgb(250, 249, 245);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:ui-monospace, monospace;font-size:58px;font-weight:800;text-anchor:start;dominant-baseline:auto">O</text>
+<text class="stg-sub" x="340" y="188" text-anchor="middle">STEGANOGRAPHIC EMBEDDING ENGINE</text>
 
-<text x="340" y="188" text-anchor="middle" style="fill:rgb(194, 192, 182);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:ui-monospace, monospace;font-size:15px;font-weight:500;text-anchor:middle;dominant-baseline:auto">STEGANOGRAPHIC EMBEDDING ENGINE</text>
+<text class="stg-bit" x="160" y="150" style="animation-delay:1.0s">1</text>
+<text class="stg-bit" x="240" y="150" style="animation-delay:1.5s">0</text>
+<text class="stg-bit" x="320" y="150" style="animation-delay:2.0s">1</text>
+<text class="stg-bit" x="400" y="150" style="animation-delay:2.5s">0</text>
+<text class="stg-bit" x="465" y="150" style="animation-delay:3.0s">1</text>
 
-<text x="160" y="150" style="animation-delay:1.0s;fill:rgb(239, 159, 39);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.275286;font-family:ui-monospace, monospace;font-size:13px;font-weight:700;text-anchor:start;dominant-baseline:auto">1</text>
-<text x="240" y="150" style="animation-delay:1.5s;fill:rgb(239, 159, 39);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.592799;font-family:ui-monospace, monospace;font-size:13px;font-weight:700;text-anchor:start;dominant-baseline:auto">0</text>
-<text x="320" y="150" style="animation-delay:2.0s;fill:rgb(239, 159, 39);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.910313;font-family:ui-monospace, monospace;font-size:13px;font-weight:700;text-anchor:start;dominant-baseline:auto">1</text>
-<text x="400" y="150" style="animation-delay:2.5s;fill:rgb(239, 159, 39);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.148281;font-family:ui-monospace, monospace;font-size:13px;font-weight:700;text-anchor:start;dominant-baseline:auto">0</text>
-<text x="465" y="150" style="animation-delay:3.0s;fill:rgb(239, 159, 39);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.465794;font-family:ui-monospace, monospace;font-size:13px;font-weight:700;text-anchor:start;dominant-baseline:auto">1</text>
-
-<g style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
-  <g transform="translate(0,0)" style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
-    <path d="M0,-2 Q-22,-26 -34,-14 Q-26,-2 -6,-6 Z" fill="#cfcfcf" stroke="#7a7a7a" stroke-width="0.8" opacity="0.85" style="fill:rgb(207, 207, 207);stroke:rgb(122, 122, 122);color:rgb(255, 255, 255);stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.85;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <ellipse cx="2" cy="2" rx="16" ry="11" fill="#F2A623" stroke="#3a2c08" stroke-width="1.2" style="fill:rgb(242, 166, 35);stroke:rgb(58, 44, 8);color:rgb(255, 255, 255);stroke-width:1.2px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <rect x="-2" y="-9" width="5" height="22" fill="#1c1c1c" rx="1" style="fill:rgb(28, 28, 28);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <rect x="8" y="-8" width="5" height="20" fill="#1c1c1c" rx="1" style="fill:rgb(28, 28, 28);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <circle cx="-13" cy="0" r="7" fill="#262011" stroke="#3a2c08" stroke-width="1" style="fill:rgb(38, 32, 17);stroke:rgb(58, 44, 8);color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <circle cx="-15" cy="-2" r="2" fill="#fff" opacity="0.85" style="fill:rgb(255, 255, 255);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.85;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <path d="M-18,-5 Q-26,-12 -24,-16" stroke="#1c1c1c" stroke-width="1.2" fill="none" style="fill:none;stroke:rgb(28, 28, 28);color:rgb(255, 255, 255);stroke-width:1.2px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-    <path d="M-18,-3 Q-28,-8 -28,-12" stroke="#1c1c1c" stroke-width="1.2" fill="none" style="fill:none;stroke:rgb(28, 28, 28);color:rgb(255, 255, 255);stroke-width:1.2px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
-  </g>
+<g class="stg-bee">
+  <path class="stg-wing" d="M0,-2 Q-22,-26 -34,-14 Q-26,-2 -6,-6 Z" fill="#cfcfcf" stroke="#7a7a7a" stroke-width="0.8" opacity="0.85"/>
+  <ellipse cx="2" cy="2" rx="16" ry="11" fill="#F2A623" stroke="#3a2c08" stroke-width="1.2"/>
+  <rect x="-2" y="-9" width="5" height="22" fill="#1c1c1c" rx="1"/>
+  <rect x="8" y="-8" width="5" height="20" fill="#1c1c1c" rx="1"/>
+  <circle cx="-13" cy="0" r="7" fill="#262011" stroke="#3a2c08" stroke-width="1"/>
+  <circle cx="-15" cy="-2" r="2" fill="#fff" opacity="0.85"/>
+  <path d="M-18,-5 Q-26,-12 -24,-16" stroke="#1c1c1c" stroke-width="1.2" fill="none"/>
+  <path d="M-18,-3 Q-28,-8 -28,-12" stroke="#1c1c1c" stroke-width="1.2" fill="none"/>
 </g>
 </svg>
