@@ -1,5 +1,5 @@
 <svg width="500" height="40" viewBox="0 0 500 40" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">
-<rect x="0" y="0" width="500" height="40" rx="6" fill="#f7bf02"/>
-<path d="M28 12 l3 6 6.5 0.7 -4.7 4.4 1.1 6.5 -5.9-3.2 -5.8 3.2 1.1-6.5 -4.7-4.4 6.5-0.7 z" fill="#2a1f06"/>
-<text x="260" y="26" text-anchor="middle" font-weight="700" font-size="14" letter-spacing="1" fill="#2a1f06">CONTRIBUTE ON GITHUB</text>
+<rect x="1" y="1" width="498" height="38" rx="6" fill="none" stroke="#f7bf02" stroke-width="2"/>
+<path d="M28 12 l3 6 6.5 0.7 -4.7 4.4 1.1 6.5 -5.9-3.2 -5.8 3.2 1.1-6.5 -4.7-4.4 6.5-0.7 z" fill="none" stroke="#f7bf02" stroke-width="1.5"/>
+<text x="260" y="26" text-anchor="middle" font-weight="700" font-size="14" letter-spacing="1" fill="#f7bf02">CONTRIBUTE ON GITHUB</text>
 </svg>

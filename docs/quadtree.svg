@@ -1,0 +1,50 @@
+<svg width="100%" viewBox="0 0 680 240" role="img" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace">
+<title>Adaptive Quadtree decomposition and bit embedding</title>
+<desc>A region is recursively subdivided into quadrants; selected cells receive embedded bits, with a faint honeycomb backdrop.</desc>
+<style>
+  .qt-cell { fill:none; stroke:#888780; stroke-width:1; }
+  .qt-hot  { stroke:#EF9F27; }
+  .qt-c    { animation: qtCell 7s ease-in-out infinite; transform-origin:center; transform-box:fill-box; }
+  .qt-bit  { fill:#EF9F27; font-size:12px; font-weight:700; animation: qtBit 7s ease-in-out infinite; }
+  .qt-cap  { fill:#73726C; font-size:13px; letter-spacing:3px; }
+  .qt-hex  { fill:none; stroke:#EF9F27; stroke-width:0.6; animation: qtHex 5s ease-in-out infinite; }
+  @keyframes qtCell { 0%,8% { opacity:0; transform:scale(0.6);} 16%,90% { opacity:1; transform:scale(1);} 100% { opacity:0; transform:scale(1);} }
+  @keyframes qtBit  { 0%,20% { opacity:0;} 35%,80% { opacity:1;} 100% { opacity:0;} }
+  @keyframes qtHex  { 0%,100% { opacity:0.05;} 50% { opacity:0.13;} }
+  @media (prefers-reduced-motion: reduce) { .qt-c,.qt-bit,.qt-hex { animation:none; opacity:1; } }
+</style>
+
+<g>
+  <path class="qt-hex" d="M40,30 l14,8 v16 l-14,8 l-14,-8 v-16 z"/>
+  <path class="qt-hex" d="M82,30 l14,8 v16 l-14,8 l-14,-8 v-16 z"/>
+  <path class="qt-hex" d="M610,150 l14,8 v16 l-14,8 l-14,-8 v-16 z"/>
+  <path class="qt-hex" d="M640,110 l14,8 v16 l-14,8 l-14,-8 v-16 z"/>
+  <path class="qt-hex" d="M60,180 l14,8 v16 l-14,8 l-14,-8 v-16 z"/>
+</g>
+
+<rect x="240" y="30" width="200" height="180" class="qt-cell"/>
+
+<rect x="240" y="30"  width="100" height="90" class="qt-cell qt-c" style="animation-delay:0.4s"/>
+<rect x="340" y="30"  width="100" height="90" class="qt-cell qt-hot qt-c" style="animation-delay:0.8s"/>
+<rect x="240" y="120" width="100" height="90" class="qt-cell qt-hot qt-c" style="animation-delay:1.2s"/>
+<rect x="340" y="120" width="100" height="90" class="qt-cell qt-c" style="animation-delay:1.6s"/>
+
+<rect x="340" y="30" width="50" height="45" class="qt-cell qt-hot qt-c" style="animation-delay:2.2s"/>
+<rect x="390" y="30" width="50" height="45" class="qt-cell qt-c" style="animation-delay:2.5s"/>
+<rect x="340" y="75" width="50" height="45" class="qt-cell qt-c" style="animation-delay:2.8s"/>
+<rect x="390" y="75" width="50" height="45" class="qt-cell qt-hot qt-c" style="animation-delay:3.1s"/>
+
+<rect x="240" y="120" width="50" height="45" class="qt-cell qt-c" style="animation-delay:2.4s"/>
+<rect x="290" y="120" width="50" height="45" class="qt-cell qt-hot qt-c" style="animation-delay:2.7s"/>
+<rect x="240" y="165" width="50" height="45" class="qt-cell qt-hot qt-c" style="animation-delay:3.0s"/>
+<rect x="290" y="165" width="50" height="45" class="qt-cell qt-c" style="animation-delay:3.3s"/>
+
+<text class="qt-bit" x="361" y="56"  style="animation-delay:2.4s">1</text>
+<text class="qt-bit" x="411" y="100" style="animation-delay:3.3s">0</text>
+<text class="qt-bit" x="311" y="146" style="animation-delay:2.9s">1</text>
+<text class="qt-bit" x="261" y="190" style="animation-delay:3.2s">0</text>
+<text class="qt-bit" x="385" y="170" style="animation-delay:1.8s">1</text>
+<text class="qt-bit" x="285" y="80"  style="animation-delay:1.4s">0</text>
+
+<text class="qt-cap" x="340" y="232" text-anchor="middle">quadtree &#8594; embed &#8594; encode</text>
+</svg>
