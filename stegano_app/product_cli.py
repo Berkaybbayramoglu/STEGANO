@@ -94,6 +94,62 @@ def _ensure_output_path(path: Path, force: bool) -> None:
         )
 
 
+def _gpu_backend_available() -> bool:
+    return hasattr(stegano_core, "gpu_score_and_fitness")
+
+
+def _gpu_smoke_test(
+    cover_gray: np.ndarray,
+    colony_size: int,
+    payload_len: int,
+    min_block: int,
+    console: Console,
+) -> None:
+    if not _gpu_backend_available():
+        console.print(
+            "[warn]GPU check skipped: GPU backend is not built in this environment. "
+            "Run a CPU-only build or rebuild with maturin if you want GPU smoke tests.[/warn]"
+        )
+        return
+
+    try:
+        pool = stegano_core.get_quadtree_sparse_map(cover_gray, min_block)
+    except Exception as exc:
+        console.print(f"[warn]GPU check skipped: quadtree failed ({exc}).[/warn]")
+        return
+
+    if len(pool) < 64:
+        console.print("[warn]GPU check skipped: quadtree pool too small.[/warn]")
+        return
+
+    pool = pool[: min(len(pool), 4096)]
+    pool_y = np.array([p[0] for p in pool], dtype=np.uint32)
+    pool_x = np.array([p[1] for p in pool], dtype=np.uint32)
+
+    L = max(1, min(payload_len, 512))
+    if L >= len(pool):
+        L = max(1, len(pool) // 2)
+
+    foods = np.random.randint(0, len(pool), size=(colony_size, L), dtype=np.uint32)
+
+    try:
+        score_table, fitness = stegano_core.gpu_score_and_fitness(
+            cover_gray, pool_y, pool_x, foods
+        )
+    except Exception as exc:
+        console.print(f"[error]GPU check failed:[/error] {exc}")
+        return
+
+    console.print(
+        Panel.fit(
+            f"GPU check OK\n"
+            f"score_table: {len(score_table):,} | fitness: {len(fitness):,}",
+            border_style="accent",
+            box=box.ASCII,
+        )
+    )
+
+
 def _require_prompt_toolkit(console: Console) -> None:
     try:
         import prompt_toolkit  # noqa: F401
@@ -285,6 +341,16 @@ def cmd_lock(ns: argparse.Namespace, console: Console) -> int:
 
     payload_bits = np.ascontiguousarray(payload_bits, dtype=np.uint8)
     with console.status("Analyzing image and embedding payload...", spinner="dots"):
+        if getattr(ns, "gpu_check", False) and not _gpu_backend_available():
+            console.print(
+                "[warn]GPU smoke test requested, but the GPU backend is unavailable. "
+                "Continuing with CPU embedding only.[/warn]"
+            )
+        elif getattr(ns, "gpu_check", False):
+            gray = cover
+            if cover.ndim == 3:
+                gray = cv2.cvtColor(cover, cv2.COLOR_RGB2GRAY)
+            _gpu_smoke_test(gray, ns.colony_size, len(payload_bits), ns.min_block, console)
         if cover.ndim == 2:
             stego = stegano_core.run_product_embed(
                 cover,
@@ -432,6 +498,10 @@ def cmd_inspect(ns: argparse.Namespace, console: Console) -> int:
             output_path,
             cover_name=cover_path.name,
             stego_name=stego_path.name,
+            password=getattr(ns, "password", None),
+            colony_size=getattr(ns, "colony_size", 30),
+            max_iter=getattr(ns, "max_iter", 50),
+            min_block=getattr(ns, "min_block", 4),
         )
 
     console.print(
@@ -754,6 +824,22 @@ def _lock_menu(console: Console) -> argparse.Namespace:
         raise KeyboardInterrupt
     min_block = int(block_str) if block_str else 4
 
+    gpu_check = questionary.confirm(
+        "Run GPU smoke test before embedding? (experimental)",
+        default=False,
+        qmark="> ",
+        style=_prompt_style,
+        bottom_toolbar=_input_toolbar(),
+    ).ask()
+    if gpu_check is None:
+        raise KeyboardInterrupt
+    if gpu_check and not _gpu_backend_available():
+        console.print(
+            "[warn]GPU smoke test is unavailable in this install. "
+            "The workflow will continue without GPU checks.[/warn]"
+        )
+        gpu_check = False
+
     return argparse.Namespace(
         input=str(cover),
         output=str(output),
@@ -764,6 +850,7 @@ def _lock_menu(console: Console) -> argparse.Namespace:
         max_iter=max_iter,
         min_block=min_block,
         force=force,
+        gpu_check=bool(gpu_check),
     )
 
 
@@ -986,7 +1073,7 @@ def _wizard_inspect(console: Console) -> argparse.Namespace:
     import questionary
     from questionary import Style
 
-    steps = ["Cover Path", "Stego Path", "Output Path"]
+    steps = ["Cover Path", "Stego Path", "Output Path", "Overlay"]
 
     _prompt_style = Style(
         [
@@ -1117,11 +1204,88 @@ def _wizard_inspect(console: Console) -> argparse.Namespace:
         "inspection_result.png",
     )
 
+    _render_step(3, "Optional: overlay D-ABC selected pixels (requires password)")
+    overlay = questionary.text(
+        "Overlay D-ABC selections? [y/n]",
+        qmark="> ",
+        validate=lambda v: True if v.lower() in {"y", "yes", "n", "no"} else "Please enter y or n.",
+        style=_prompt_style,
+        bottom_toolbar=_input_toolbar(),
+    ).ask()
+    if overlay is None:
+        raise KeyboardInterrupt
+
+    password = None
+    colony_size = 30
+    max_iter = 50
+    min_block = 4
+
+    if overlay.lower() in {"y", "yes"}:
+        _render_step(3, "Enter the password used during embedding.")
+        password = questionary.password(
+            "Password",
+            qmark="> ",
+            validate=lambda v: True if v else "Password is required.",
+            style=_prompt_style,
+            bottom_toolbar=_input_toolbar(),
+        ).ask()
+        if password is None:
+            raise KeyboardInterrupt
+
+        _render_step(3, "Match the embed parameters used in the original run.")
+
+        def _validate_pos_int(v: str) -> bool | str:
+            if not v:
+                return True
+            if not v.isdigit() or int(v) <= 0:
+                return "Please enter a valid positive integer."
+            return True
+
+        colony_str = questionary.text(
+            "Colony Size (30)",
+            qmark="> ",
+            default="30",
+            validate=_validate_pos_int,
+            style=_prompt_style,
+            bottom_toolbar=_input_toolbar(),
+        ).ask()
+        if colony_str is None:
+            raise KeyboardInterrupt
+        colony_size = int(colony_str) if colony_str else 30
+
+        iter_str = questionary.text(
+            "Max Iterations (50)",
+            qmark="> ",
+            default="50",
+            validate=_validate_pos_int,
+            style=_prompt_style,
+            bottom_toolbar=_input_toolbar(),
+        ).ask()
+        if iter_str is None:
+            raise KeyboardInterrupt
+        max_iter = int(iter_str) if iter_str else 50
+
+        block_str = questionary.text(
+            "Min Blocks (4)",
+            qmark="> ",
+            default="4",
+            validate=_validate_pos_int,
+            style=_prompt_style,
+            bottom_toolbar=_input_toolbar(),
+        ).ask()
+        if block_str is None:
+            raise KeyboardInterrupt
+        min_block = int(block_str) if block_str else 4
+
     return argparse.Namespace(
         cover=str(cover),
         stego=str(stego),
         output=str(output),
         force=force,
+        password=password,
+        colony_size=colony_size,
+        max_iter=max_iter,
+        min_block=min_block,
     )
 
 def purify_ansi_banner(raw_ansi: str) -> str:
@@ -1459,6 +1623,11 @@ def build_parser() -> argparse.ArgumentParser:
     lock.add_argument("--colony-size", type=int, default=30)
     lock.add_argument("--max-iter", type=int, default=50)
     lock.add_argument("--min-block", type=int, default=4)
+    lock.add_argument(
+        "--gpu-check",
+        action="store_true",
+        help="Run a GPU smoke test before embedding (does not change output)",
+    )
     lock.add_argument("--force", action="store_true", help="Overwrite outputs")
     lock.set_defaults(func=cmd_lock)
 
@@ -1477,6 +1646,10 @@ def build_parser() -> argparse.ArgumentParser:
     insp.add_argument("--cover", required=True, help="Original cover image")
     insp.add_argument("--stego", required=True, help="Stego image")
     insp.add_argument("--output", default="inspection_result.png")
+    insp.add_argument("--password", default=None, help="Password used during embedding (for overlay)")
+    insp.add_argument("--colony-size", type=int, default=30)
+    insp.add_argument("--max-iter", type=int, default=50)
+    insp.add_argument("--min-block", type=int, default=4)
     insp.add_argument("--force", action="store_true", help="Overwrite outputs")
     insp.set_defaults(func=cmd_inspect)
 

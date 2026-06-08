@@ -11,6 +11,8 @@ for the inspected cover/stego pair.
 from __future__ import annotations
 
 from pathlib import Path
+import hashlib
+import struct
 
 import matplotlib
 import matplotlib.gridspec as gridspec
@@ -38,10 +40,23 @@ DIFF_AMPLIFY = 20
 
 
 
-def make_quadtree_overlay(image: np.ndarray, min_block: int = MIN_BLOCK) -> tuple[np.ndarray, int]:
+def _paint_points(rgb: np.ndarray, coords: list[tuple[int, int]], color: tuple[int, int, int]) -> None:
+    h, w = rgb.shape[:2]
+    for (y, x) in coords:
+        y0 = max(0, y - 1)
+        y1 = min(h, y + 2)
+        x0 = max(0, x - 1)
+        x1 = min(w, x + 2)
+        rgb[y0:y1, x0:x1, :] = color
+
+
+def make_quadtree_overlay(
+    image: np.ndarray,
+    pool_coords: list[tuple[int, int]],
+    selected_coords: list[tuple[int, int]] | None = None,
+) -> tuple[np.ndarray, int, int]:
     """
-    Quadtree'nin sectigi pikselleri gorsellestiren RGB overlay olusturur.
-    Secili pikseller sari, geri kalanlar orijinal gri tondadir.
+    Quadtree havuzunu sari, secili D-ABC piksellerini ise kirmizi olarak gosterir.
     """
     if image.ndim == 3:
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
@@ -50,15 +65,89 @@ def make_quadtree_overlay(image: np.ndarray, min_block: int = MIN_BLOCK) -> tupl
         gray = image
         rgb = np.stack([image, image, image], axis=-1).copy()
 
-    coords = stegano_core.get_quadtree_sparse_map(gray, min_block)
     mask = np.zeros(gray.shape, dtype=bool)
-    for (y, x) in coords:
+    for (y, x) in pool_coords:
         mask[y, x] = True
 
     rgb[mask, 0] = np.clip(rgb[mask, 0].astype(int) // 2 + 128, 0, 255).astype(np.uint8)
     rgb[mask, 1] = np.clip(rgb[mask, 1].astype(int) // 2 + 128, 0, 255).astype(np.uint8)
     rgb[mask, 2] = (rgb[mask, 2] * 0).astype(np.uint8)
-    return rgb, int(mask.sum())
+
+    selected_count = 0
+    if selected_coords:
+        _paint_points(rgb, selected_coords, (255, 32, 32))
+        selected_count = len(selected_coords)
+
+    return rgb, int(mask.sum()), selected_count
+
+
+def _extract_payload_len(stego_gray: np.ndarray, pool: list[tuple[int, int]]) -> int:
+    if len(pool) < 32:
+        raise ValueError("quadtree pool is too small for header")
+    header_pool = pool[:32]
+    bits = np.array([stego_gray[y, x] & 1 for (y, x) in header_pool], dtype=np.uint8)
+    length_bytes = np.packbits(bits, bitorder="big").tobytes()
+    return struct.unpack(">I", length_bytes)[0]
+
+
+def _compute_dabc_selected_coords_gray(
+    cover_gray: np.ndarray,
+    stego_gray: np.ndarray,
+    password: str,
+    colony_size: int,
+    max_iter: int,
+    min_block: int,
+) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+    invariant_cover = cover_gray & 0xFE
+    pool = stegano_core.get_quadtree_sparse_map(invariant_cover, min_block)
+    pool = sorted(pool)
+
+    payload_len = _extract_payload_len(stego_gray, pool)
+    data_pool = pool[32:]
+    if payload_len <= 0 or payload_len > len(data_pool):
+        raise ValueError("payload length exceeds quadtree pool capacity")
+
+    seed_bytes = hashlib.sha256(password.encode("utf-8")).digest()
+    seed_int = int.from_bytes(seed_bytes, byteorder="big")
+    seed_u64 = seed_int & 0xFFFFFFFFFFFFFFFF
+
+    coords = stegano_core.dabc_select_coords(
+        invariant_cover,
+        data_pool,
+        payload_len,
+        colony_size,
+        max_iter,
+        seed_u64,
+    )
+    return pool, coords
+
+
+def _compute_dabc_selected_coords_color(
+    cover: np.ndarray,
+    stego: np.ndarray,
+    password: str,
+    colony_size: int,
+    max_iter: int,
+    min_block: int,
+) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+    all_pools: list[tuple[int, int]] = []
+    all_selected: list[tuple[int, int]] = []
+
+    for ch in range(3):
+        pool, coords = _compute_dabc_selected_coords_gray(
+            np.ascontiguousarray(cover[:, :, ch]),
+            np.ascontiguousarray(stego[:, :, ch]),
+            password,
+            colony_size,
+            max_iter,
+            min_block,
+        )
+        all_pools.extend(pool)
+        all_selected.extend(coords)
+
+    pool_unique = sorted(set(all_pools))
+    selected_unique = sorted(set(all_selected))
+    return pool_unique, selected_unique
 
 
 def inspect_pair(
@@ -68,6 +157,10 @@ def inspect_pair(
     *,
     cover_name: str = "cover.pgm",
     stego_name: str = "stego.pgm",
+    password: str | None = None,
+    colony_size: int = 30,
+    max_iter: int = 50,
+    min_block: int = MIN_BLOCK,
 ) -> dict[str, float | int]:
     if cover.ndim not in (2, 3) or stego.ndim not in (2, 3):
         raise ValueError("expected 2D grayscale or 3D RGB images for inspection")
@@ -90,7 +183,46 @@ def inspect_pair(
         diff_amp = np.clip(diff_raw * DIFF_AMPLIFY, 0, 255).astype(np.uint8)
         n_changed = int((diff_raw > 0).sum())
 
-    qt_rgb, pool_size = make_quadtree_overlay(cover, MIN_BLOCK)
+    selected_coords: list[tuple[int, int]] | None = None
+    if password:
+        try:
+            if cover.ndim == 3:
+                pool_coords, selected_coords = _compute_dabc_selected_coords_color(
+                    cover,
+                    stego,
+                    password,
+                    colony_size,
+                    max_iter,
+                    min_block,
+                )
+            else:
+                pool_coords, selected_coords = _compute_dabc_selected_coords_gray(
+                    cover,
+                    stego,
+                    password,
+                    colony_size,
+                    max_iter,
+                    min_block,
+                )
+        except Exception:
+            pool_coords = stegano_core.get_quadtree_sparse_map(
+                cover if cover.ndim == 2 else cv2.cvtColor(cover, cv2.COLOR_RGB2GRAY),
+                min_block,
+            )
+            pool_coords = sorted(pool_coords)
+            selected_coords = None
+    else:
+        pool_coords = stegano_core.get_quadtree_sparse_map(
+            cover if cover.ndim == 2 else cv2.cvtColor(cover, cv2.COLOR_RGB2GRAY),
+            min_block,
+        )
+        pool_coords = sorted(pool_coords)
+
+    qt_rgb, pool_size, selected_count = make_quadtree_overlay(
+        cover,
+        pool_coords,
+        selected_coords,
+    )
     pool_ratio_size = cover.shape[0] * cover.shape[1]
     comp = 100.0 * pool_size / pool_ratio_size
 
@@ -101,7 +233,7 @@ def inspect_pair(
         "Orijinal (Cover)",
         "Stego (Product)",
         "Fark Haritasi  (x20 amplifikasyon)",
-        "Quadtree Havuzu  (sari = secili)",
+        "Quadtree Havuzu + Secili Pikseller",
     ]
 
     outer = gridspec.GridSpec(
@@ -221,6 +353,7 @@ def inspect_pair(
                 0.02,
                 0.97,
                 f"Havuz K: {pool_size:,}\n"
+                f"Secili: {selected_count if selected_coords else 'n/a'}\n"
                 f"Daralma: %{comp:.1f}",
                 transform=ax.transAxes,
                 fontsize=7.5,
@@ -236,10 +369,11 @@ def inspect_pair(
                     alpha=0.88,
                 ),
             )
-            patch_y = mpatches.Patch(color=(1, 1, 0), label="Secili piksel")
+            patch_y = mpatches.Patch(color=(1, 1, 0), label="Quadtree havuzu")
+            patch_r = mpatches.Patch(color=(1, 0.1, 0.1), label="D-ABC secimi")
             patch_g = mpatches.Patch(color=(0.45, 0.45, 0.45), label="Homojen bolge")
             ax.legend(
-                handles=[patch_y, patch_g],
+                handles=[patch_r, patch_y, patch_g],
                 loc="lower right",
                 fontsize=6.5,
                 facecolor="#111111",

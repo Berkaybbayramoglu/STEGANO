@@ -1,0 +1,8 @@
+<svg width="250" height="50" viewBox="0 0 250 50" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">
+<rect x="0" y="0" width="250" height="50" rx="8" fill="#f7bf02"/>
+<circle cx="30" cy="25" r="9" fill="none" stroke="#2a1f06" stroke-width="2"/>
+<circle cx="30" cy="28" r="1.6" fill="#2a1f06"/>
+<line x1="30" y1="19" x2="30" y2="23" stroke="#2a1f06" stroke-width="2"/>
+<text x="50" y="24" font-weight="700" font-size="15" letter-spacing="1" fill="#2a1f06">ISSUES</text>
+<text x="50" y="40" font-weight="400" font-size="10" fill="#5a4a10">report a problem</text>
+</svg>

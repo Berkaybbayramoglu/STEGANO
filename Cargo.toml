@@ -35,6 +35,12 @@ ndarray = "0.16.1"
 # (Xoshiro256++) that is 2-4x faster than StdRng for stochastic search loops.
 rand = { version = "0.8", features = ["small_rng"] }
 sha2 = "0.10"
+wgpu = { version = "0.20", optional = true }
+bytemuck = { version = "1.15", features = ["derive"], optional = true }
+pollster = { version = "0.3", optional = true }
+
+[features]
+gpu = ["wgpu", "bytemuck", "pollster"]
 
 # ── Release-profile optimisations ────────────────────────────────────────────
 # lto = "thin" enables cross-crate inlining for tighter inner loops.

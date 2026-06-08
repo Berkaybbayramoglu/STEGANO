@@ -1,0 +1,7 @@
+<svg width="250" height="50" viewBox="0 0 250 50" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">
+<rect x="0" y="0" width="250" height="50" rx="8" fill="#f7bf02"/>
+<rect x="22" y="16" width="18" height="18" rx="3" fill="none" stroke="#2a1f06" stroke-width="2"/>
+<path d="M27 25 l3 3 5-6" stroke="#2a1f06" stroke-width="2" fill="none" stroke-linecap="round"/>
+<text x="54" y="24" font-weight="700" font-size="15" letter-spacing="1" fill="#2a1f06">PIP INSTALL</text>
+<text x="54" y="40" font-weight="400" font-size="10" fill="#5a4a10">pipx install stegano-core</text>
+</svg>

@@ -1,0 +1,63 @@
+<svg width="100%" viewBox="0 0 680 240" role="img" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace">
+<title>STEGANO — Steganographic Embedding Engine</title>
+<desc>Animated banner: a bee flies over the STEGANO title, letters decode from scrambled characters, bits trail behind.</desc>
+<style>
+  .stg-real   { fill:#FAF9F5; font-size:58px; font-weight:800; letter-spacing:4px; }
+  .stg-scram  { fill:#9C9A92; font-size:58px; font-weight:800; letter-spacing:4px; animation: stgScram 6.5s ease-in-out infinite; }
+  .stg-rl     { animation: stgDecode 6.5s ease-in-out infinite; }
+  .stg-sub    { fill:#C2C0B6; font-size:15px; font-weight:500; letter-spacing:6px; }
+  .stg-bit    { fill:#EF9F27; font-size:13px; font-weight:700; animation: stgBit 1.7s linear infinite; }
+  .stg-wing   { animation: stgFlutter 0.12s linear infinite; transform-origin: 0px 0px; }
+  .stg-bee    { animation: stgFly 6.5s ease-in-out infinite alternate; }
+  @keyframes stgDecode  { 0%,14% { opacity:0.22; } 20%,100% { opacity:1; } }
+  @keyframes stgScram   { 0%,14% { opacity:1; } 20%,100% { opacity:0; } }
+  @keyframes stgBit     { 0% { opacity:0; transform:translateY(0) translateX(0);} 12% { opacity:0.95;} 100% { opacity:0; transform:translateY(42px) translateX(-14px);} }
+  @keyframes stgFlutter { 0%,100% { transform:scaleY(1) rotate(0deg);} 50% { transform:scaleY(0.55) rotate(-12deg);} }
+  @keyframes stgFly {
+    0%   { transform:translate(20px,120px) rotate(8deg); }
+    20%  { transform:translate(140px,92px) rotate(-4deg); }
+    40%  { transform:translate(280px,108px) rotate(6deg); }
+    60%  { transform:translate(420px,88px) rotate(-5deg); }
+    80%  { transform:translate(540px,100px) rotate(4deg); }
+    100% { transform:translate(600px,60px) rotate(0deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .stg-scram,.stg-rl,.stg-bit,.stg-wing,.stg-bee { animation:none; }
+    .stg-scram { opacity:0; } .stg-rl { opacity:1; }
+  }
+</style>
+
+<text class="stg-scram" x="118" y="138" style="animation-delay:0.6s">S</text>
+<text class="stg-real stg-rl" x="118" y="138" style="animation-delay:0.6s">S</text>
+<text class="stg-scram" x="178" y="138" style="animation-delay:1.0s">#</text>
+<text class="stg-real stg-rl" x="178" y="138" style="animation-delay:1.0s">T</text>
+<text class="stg-scram" x="236" y="138" style="animation-delay:1.4s">@</text>
+<text class="stg-real stg-rl" x="236" y="138" style="animation-delay:1.4s">E</text>
+<text class="stg-scram" x="294" y="138" style="animation-delay:1.8s">%</text>
+<text class="stg-real stg-rl" x="294" y="138" style="animation-delay:1.8s">G</text>
+<text class="stg-scram" x="360" y="138" style="animation-delay:2.2s">&amp;</text>
+<text class="stg-real stg-rl" x="360" y="138" style="animation-delay:2.2s">A</text>
+<text class="stg-scram" x="422" y="138" style="animation-delay:2.6s">$</text>
+<text class="stg-real stg-rl" x="422" y="138" style="animation-delay:2.6s">N</text>
+<text class="stg-scram" x="486" y="138" style="animation-delay:3.0s">?</text>
+<text class="stg-real stg-rl" x="486" y="138" style="animation-delay:3.0s">O</text>
+
+<text class="stg-sub" x="340" y="188" text-anchor="middle">STEGANOGRAPHIC EMBEDDING ENGINE</text>
+
+<text class="stg-bit" x="160" y="150" style="animation-delay:1.0s">1</text>
+<text class="stg-bit" x="240" y="150" style="animation-delay:1.5s">0</text>
+<text class="stg-bit" x="320" y="150" style="animation-delay:2.0s">1</text>
+<text class="stg-bit" x="400" y="150" style="animation-delay:2.5s">0</text>
+<text class="stg-bit" x="465" y="150" style="animation-delay:3.0s">1</text>
+
+<g class="stg-bee">
+  <path class="stg-wing" d="M0,-2 Q-22,-26 -34,-14 Q-26,-2 -6,-6 Z" fill="#cfcfcf" stroke="#7a7a7a" stroke-width="0.8" opacity="0.85"/>
+  <ellipse cx="2" cy="2" rx="16" ry="11" fill="#F2A623" stroke="#3a2c08" stroke-width="1.2"/>
+  <rect x="-2" y="-9" width="5" height="22" fill="#1c1c1c" rx="1"/>
+  <rect x="8" y="-8" width="5" height="20" fill="#1c1c1c" rx="1"/>
+  <circle cx="-13" cy="0" r="7" fill="#262011" stroke="#3a2c08" stroke-width="1"/>
+  <circle cx="-15" cy="-2" r="2" fill="#fff" opacity="0.85"/>
+  <path d="M-18,-5 Q-26,-12 -24,-16" stroke="#1c1c1c" stroke-width="1.2" fill="none"/>
+  <path d="M-18,-3 Q-28,-8 -28,-12" stroke="#1c1c1c" stroke-width="1.2" fill="none"/>
+</g>
+</svg>
